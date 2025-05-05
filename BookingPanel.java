@@ -5,9 +5,7 @@ import java.awt.event.*;
 import java.sql.*;
 import java.util.*;
 import javax.swing.*;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.UUID;
 
 public class BookingPanel extends JPanel {
     private final JLabel TopMessage1;
@@ -20,6 +18,8 @@ public class BookingPanel extends JPanel {
     private String arrivalDate = "";
     private String departureDate = "";
     private String guestCount = "";
+    
+    private String referralCode;
 
     private final Set<Integer> selectedRooms = new HashSet<>();
     private final Map<Integer, String> roomTypeMap = new HashMap<>();
@@ -112,7 +112,19 @@ public class BookingPanel extends JPanel {
         nextToPaymentFromDouble.setBounds(800, 370, 160, 30);
         nextToPaymentFromDouble.setBackground(new Color(0xfff3e0));
         nextToPaymentFromDouble.setForeground(new Color(0xDDA15E));
-        nextToPaymentFromDouble.addActionListener(e -> switchToPanel("payment"));
+        //nextToPaymentFromDouble.addActionListener(e -> switchToPanel("payment"));
+        
+        nextToPaymentFromDouble.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                referralCode = ReferralCodeGenerator.generateReferralCode();
+                updatePaymentPanel();
+                switchToPanel("payment");
+            }
+        });
+
+        
+        
+        
         panpan2.add(nextToPaymentFromDouble);
 
         // Suite Rooms Panel
@@ -169,6 +181,14 @@ public class BookingPanel extends JPanel {
         RefNum.setOpaque(true);
         RefNum.setFont(new Font("Arial", Font.PLAIN, 14));
         panpan4.add(RefNum);
+        
+        JLabel codecode = new JLabel(referralCode);
+        codecode.setBounds(525, 210, 180, 25);
+        codecode.setBackground(new Color(0x669bbc));
+        codecode.setForeground(new Color(0xFDF0D5));
+        codecode.setOpaque(true);
+        codecode.setFont(new Font("Arial", Font.PLAIN, 14));
+        panpan4.add(codecode);
         
         JLabel EmailLabel = new JLabel("  Email");
         EmailLabel.setBounds(335, 260, 180, 25);
@@ -299,6 +319,18 @@ public class BookingPanel extends JPanel {
         finish.addActionListener(e -> saveBookingToDatabase());
         return finish;
     }
+    
+    private void updatePaymentPanel() {
+        JLabel codecode = new JLabel(referralCode);
+        codecode.setBounds(525, 210, 180, 25);
+        codecode.setBackground(new Color(0x669bbc));
+        codecode.setForeground(new Color(0xFDF0D5));
+        codecode.setOpaque(true);
+        codecode.setFont(new Font("Arial", Font.PLAIN, 14));
+        panpan4.add(codecode);
+        codecode.setText(referralCode);
+        panpan4.repaint();  // Ensure the panel is redrawn after updating
+    }
 
     private void saveBookingToDatabase() {
         if (selectedRooms.isEmpty()) {
@@ -344,15 +376,12 @@ public class BookingPanel extends JPanel {
         }
     }
     
-    private int generateUniqueRandomNumber() {
-        int number;
-        do {
-            number = 100000 + random.nextInt(900000); // Generates 6-digit number
-        } while (generatedNumbers.contains(number));
-        generatedNumbers.add(number);
-        return number;
+    public class ReferralCodeGenerator {
+        public static String generateReferralCode() {
+            return UUID.randomUUID().toString();
+        }
     }
-
+    
     private JPanel createLegendPanel() {
         JPanel legendPanel = new JPanel();
         legendPanel.setBounds(45, 365, 300, 50);
@@ -398,6 +427,7 @@ public class BookingPanel extends JPanel {
             case "payment":
                 roomTypeLabel.setText("    Payment");
                 panpan4.setVisible(true);
+                updatePaymentPanel();
                 break;
         }
     }
